@@ -2,38 +2,58 @@
 //
 // Sample code file
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ParallaxScroller : MonoBehaviour
 {
-    [Tooltip("Camera to which parallax is relative")]
     public GameObject parallaxCamera;
+    public float parallaxLevel = 0.5f;
+    public float playerMoveSpeed = 5f;
 
-    [Tooltip("Level of parallax for this depth layer")]
-    public float parallaxLevel;
+    private float startPos;
+    private float layerWidth;
+    private Camera cam;
 
-    // the GC provides useful I/O and utility methods
-    GameObject GC;
-    GameController eventSystem;
-
-    float startPos;
-
-    // Start is called before the first frame update
     void Start()
     {
-        GC = GameObject.FindGameObjectWithTag("GameController");
-        eventSystem = GC.GetComponent<GameController>();
-
         startPos = transform.position.x;
 
-        SoundManager.Instance.PlaySound(SoundManager.SoundType.Night, true);
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // TODO: Part of the parallax scrolling algorithm may go here.
+        float horizontalInput = Input.GetAxis("Horizontal");
+        
+        if (Mathf.Abs(horizontalInput) < 0.1f) 
+            return;
+        
+        float scrollDistance = -horizontalInput * playerMoveSpeed * Time.deltaTime * parallaxLevel;
+        Vector3 newPos = transform.position + new Vector3(scrollDistance, 0, 0);
+        
+        MakeBackgroundRepeat(ref newPos);
+        
+        transform.position = newPos;
+    }
+
+    void MakeBackgroundRepeat(ref Vector3 position)
+    {
+        if (cam == null) return;
+
+        float camHalfWidth = cam.orthographicSize * cam.aspect;
+        float camRightEdge = cam.transform.position.x + camHalfWidth;
+        float camLeftEdge = cam.transform.position.x - camHalfWidth;
+
+        float layerRightEdge = position.x + layerWidth / 2;
+        float layerLeftEdge = position.x - layerWidth / 2;
+
+        if (layerRightEdge < camLeftEdge)
+        {
+            position.x += layerWidth;
+        }
+        else if (layerLeftEdge > camRightEdge)
+        {
+            position.x -= layerWidth;
+        }
     }
 }
