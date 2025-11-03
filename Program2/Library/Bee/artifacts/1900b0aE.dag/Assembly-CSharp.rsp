@@ -355,6 +355,7 @@
 "Assets/Scripts/AnimBehavior/Wizard/WizardIdle.cs"
 "Assets/Scripts/AnimBehavior/Wizard/WizardJump.cs"
 "Assets/Scripts/AnimBehavior/Wizard/WizardRun.cs"
+"Assets/Scripts/BackgroundManager.cs"
 "Assets/Scripts/EnemyController.cs"
 "Assets/Scripts/GameController.cs"
 "Assets/Scripts/ParallaxScroller.cs"

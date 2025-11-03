@@ -263,9 +263,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.3
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &47141571
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,9 +715,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.2
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &284812067
 GameObject:
   m_ObjectHideFlags: 0
@@ -819,9 +819,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.8
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &343977821
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,9 +953,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.9
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!212 &507379733
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1916,9 +1916,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.4
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &1181593455
 GameObject:
   m_ObjectHideFlags: 0
@@ -2354,9 +2354,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.7
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &1549487836
 GameObject:
   m_ObjectHideFlags: 0
@@ -2456,9 +2456,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &1602699145
 GameObject:
   m_ObjectHideFlags: 0
@@ -2895,9 +2895,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.6
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &1677227004
 GameObject:
   m_ObjectHideFlags: 0
@@ -3131,9 +3131,83 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
   parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
+--- !u!1 &1725490274
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1725490276}
+  - component: {fileID: 1725490275}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1725490275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725490274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11beef3594821144f9b1edeac7e9045a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layer10Sky:
+  - {fileID: 4131598811663969526, guid: cf003aae397b9214d9b66b0df353d46e, type: 3}
+  - {fileID: 671230052012831838, guid: ec7372090a329834887153fa80a70e32, type: 3}
+  layer09Forest:
+  - {fileID: 3006177889183795896, guid: 34400d2de6692e3418525a2f0c24766a, type: 3}
+  - {fileID: 4289271027360426498, guid: 7dfaa8aafbd1086408483558dd3b617c, type: 3}
+  layer08Forest:
+  - {fileID: 7325572669929537479, guid: f97ffb92191f1554b8e790f2a30b0e15, type: 3}
+  - {fileID: 6021556347156841569, guid: 9637dd007e7b38d458004060e9982bc9, type: 3}
+  layer07Forest:
+  - {fileID: 8895153372575816141, guid: bddd5564cdde49b418a55c994b326e69, type: 3}
+  - {fileID: 7048177455902071553, guid: edab7dbd596d7fa4bb96b3c8a2df6b30, type: 3}
+  layer06Forest:
+  - {fileID: 3927554080886603478, guid: 4dd189e554966be4f99b80d001f4f566, type: 3}
+  - {fileID: 3192736934912272703, guid: 841a8c5c28db7774290bb3ef7c95e996, type: 3}
+  layer05Particle:
+  - {fileID: 3422763060797261895, guid: e82227213108a734bbfd04c5ebc5412c, type: 3}
+  - {fileID: 8783041272736887175, guid: 69246fdb2636e7b4f837f4738ac55edd, type: 3}
+  layer04Forest:
+  - {fileID: 7726713242381946982, guid: 5aa7478a8294d8140821bbff4ff2b147, type: 3}
+  - {fileID: 1571914886802675134, guid: 5ddc2fa2466c8a04582984eaa99ba063, type: 3}
+  layer03Particle:
+  - {fileID: 4262232926859418600, guid: 33860ac9d3eb3fa418b61e7bdc08bb3b, type: 3}
+  - {fileID: 6882048294491570554, guid: 0f39c0fb53207b744b61f1b109faa6e5, type: 3}
+  layer02Bushes:
+  - {fileID: 5690052701632716968, guid: 2feeb9e93400bf34d98a65a559acdf44, type: 3}
+  - {fileID: 3210590090560958221, guid: f2b20ae885822ca4181aa4c2256f047b, type: 3}
+  layer01Mist:
+  - {fileID: 6326389706451792494, guid: bf42b0159f4ca714b93b4169d711f502, type: 3}
+  - {fileID: 8643319683414565863, guid: 9ab413c323da66b4e8fe5c47864683c8, type: 3}
+--- !u!4 &1725490276
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725490274}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1857116140
 GameObject:
   m_ObjectHideFlags: 0
@@ -3317,9 +3391,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2582f42ba914c224fa0efeb0b0972fc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parallaxCamera: {fileID: 1660253741}
-  parallaxLevel: 0.1
+  parallaxLevel: 0.5
   playerMoveSpeed: 5
+  backgroundManager: {fileID: 1725490275}
 --- !u!1 &1928530598
 GameObject:
   m_ObjectHideFlags: 0
