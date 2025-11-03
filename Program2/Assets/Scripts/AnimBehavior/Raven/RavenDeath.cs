@@ -1,40 +1,45 @@
-// ISTA 425 / INFO 525 Algorithms for Games
-//
-// Sample code file
-
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class RavenDeath : StateMachineBehaviour
+public class RavenDeath : MonoBehaviour
 {
-    // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
-    //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    [Header("Physical parameters of the drop")]
+    public float Gravity = -30f;          
+    public float StartXVelocity = -2f;    
+    public float DespawnY = -6f;          
 
-    // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
-    //override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    private bool isDead = false;
+    private Vector2 velocity;
+    private Animator anim;
+    private Collider2D col;
 
-    // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
-    //override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    void Start()
+    {
+        anim = GetComponent<Animator>();
+        col = GetComponent<Collider2D>();
+    }
+    public void Die(float hitDirX = 0)
+    {
+        if (isDead) return;
+        isDead = true;
 
-    // OnStateMove is called right after Animator.OnAnimatorMove()
-    //override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    // Implement code that processes and affects root motion
-    //}
+        if (anim) anim.enabled = false;
 
-    // OnStateIK is called right after Animator.OnAnimatorIK()
-    //override public void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    // Implement code that sets up animation IK (inverse kinematics)
-    //}
+        if (col) col.enabled = false;
+
+        if (Mathf.Approximately(hitDirX, 0))
+            velocity = new Vector2(StartXVelocity, 0);
+        else
+            velocity = new Vector2(Mathf.Sign(hitDirX) * Mathf.Abs(StartXVelocity), 0);
+    }
+
+    void Update()
+    {
+        if (!isDead) return;
+
+        velocity.y += Gravity * Time.deltaTime;
+        transform.position += (Vector3)(velocity * Time.deltaTime);
+
+        if (transform.position.y <= DespawnY)
+            Destroy(gameObject);
+    }
 }

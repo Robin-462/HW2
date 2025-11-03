@@ -530,6 +530,7 @@ GameObject:
   - component: {fileID: 193830390}
   - component: {fileID: 193830389}
   - component: {fileID: 193830392}
+  - component: {fileID: 193830393}
   m_Layer: 0
   m_Name: GameController
   m_TagString: GameController
@@ -616,6 +617,25 @@ MonoBehaviour:
   padding: 0.8
   scrollerMove: {x: 0, y: 0, z: 0}
   playerMove: {x: 0, y: 0, z: 0}
+--- !u!114 &193830393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 193830388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05b7699c4702d4a9d92d54369c772627, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTag: Player
+  ravenTag: Raven
+  fireballTag: Fireball
+  dyingBool: isDying
+  refreshInterval: 0.25
+  spawnGrace: 0.5
+  confirmFrames: 2
 --- !u!1 &254513992
 GameObject:
   m_ObjectHideFlags: 0
@@ -1104,6 +1124,7 @@ GameObject:
   - component: {fileID: 770172681}
   - component: {fileID: 770172680}
   - component: {fileID: 770172683}
+  - component: {fileID: 770172684}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1213,6 +1234,35 @@ MonoBehaviour:
   MoveRate: 4.5
   playerCamera: {fileID: 1660253741}
   fadeTime: 0.1
+  JumpForce: 12
+  Gravity: -30
+  GroundY: -3.8
+--- !u!61 &770172684
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 770172679}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: -0.043331504, y: 0.66678834}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.26, y: 0.14}
+    oldSize: {x: 5.875, y: 5.0625}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1.1442077, y: 1.7404871}
+  m_EdgeRadius: 0
 --- !u!1 &771581209
 GameObject:
   m_ObjectHideFlags: 0

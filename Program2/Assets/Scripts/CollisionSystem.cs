@@ -9,14 +9,12 @@ public class CollisionSystem : MonoBehaviour
     public string fireballTag = "Fireball";
 
     [Header("Animator")]
-    public bool   useTrigger     = true;          
-    public string deathTrigger   = "isDying";     
-    public string deathStateName = "WizardDeath";
+    public string dyingBool = "isDying"; 
 
     [Header("Timing")]
     public float refreshInterval = 0.25f;
-    public float spawnGrace = 0.50f;            
-    public int   confirmFrames   = 2;            
+    public float spawnGrace      = 0.50f;
+    public int   confirmFrames   = 2;   
 
     private GameObject    wizard;
     private Animator      wizAnimator;
@@ -33,19 +31,30 @@ public class CollisionSystem : MonoBehaviour
     private readonly Dictionary<Collider2D, int> overlapFrames = new();
     private List<Collider2D> _toClear;
 
+    private AABB _tmpA = new AABB();
+    private AABB _tmpB = new AABB();
+
     void Awake() { startTime = Time.time; }
 
     void Start()
     {
         wizard = GameObject.FindGameObjectWithTag(playerTag);
-        if (!wizard) { Debug.LogError("[CollisionSystem] Player (tag) not found"); enabled = false; return; }
+        if (!wizard)
+        {
+            Debug.LogError("[CollisionSystem] Player (tag) not found");
+            enabled = false; return;
+        }
 
         wizAnimator = wizard.GetComponent<Animator>();
         playerBC    = wizard.GetComponent<BoxCollider2D>();
-        if (!playerBC) { Debug.LogError("[CollisionSystem] Player missing BoxCollider2D"); enabled = false; return; }
+        if (!playerBC)
+        {
+            Debug.LogError("[CollisionSystem] Player missing BoxCollider2D");
+            enabled = false; return;
+        }
 
         playerAabb.SetCollider(playerBC);
-        RefreshLists(true);
+        RefreshLists(firstTime: true);
     }
 
     void Update()
@@ -55,48 +64,78 @@ public class CollisionSystem : MonoBehaviour
 
     void LateUpdate()
     {
-        if (dead) return;
         if (Time.time - startTime < spawnGrace) return;
 
-        playerAabb.UpdateBounds();
-
-        var touchedThisFrame = new HashSet<Collider2D>();
-
-        for (int i = 0; i < ravenBCs.Count; i++)
+        if (!dead)
         {
-            var bc = ravenBCs[i];
-            if (!bc || !bc.enabled || !bc.gameObject.activeInHierarchy) continue;
+            playerAabb.UpdateBounds();
 
-            var box = new AABB(); box.SetCollider(bc); box.UpdateBounds();
-            if (Overlap(playerAabb, box))
+            var touchedThisFrame = new HashSet<Collider2D>();
+
+            for (int i = 0; i < ravenBCs.Count; i++)
             {
-                touchedThisFrame.Add(bc);
-                BumpAndCheck(bc, "Raven");
-                if (dead) return;
+                var bc = ravenBCs[i];
+                if (!bc || !bc.enabled || !bc.gameObject.activeInHierarchy) continue;
+
+                _tmpA.SetCollider(bc); _tmpA.UpdateBounds();
+                if (Overlap(playerAabb, _tmpA))
+                {
+                    touchedThisFrame.Add(bc);
+                    BumpAndCheck(bc, "Raven");
+                    if (dead) return;
+                }
+            }
+
+            for (int i = 0; i < fireballBCs.Count; i++)
+            {
+                var bc = fireballBCs[i];
+                if (!bc || !bc.enabled || !bc.gameObject.activeInHierarchy) continue;
+
+                _tmpA.SetCollider(bc); _tmpA.UpdateBounds();
+                if (Overlap(playerAabb, _tmpA))
+                {
+                    touchedThisFrame.Add(bc);
+                    BumpAndCheck(bc, "Fireball");
+                    if (dead) return;
+                }
+            }
+            if (overlapFrames.Count > 0)
+            {
+                _toClear ??= new List<Collider2D>();
+                _toClear.Clear();
+                foreach (var kv in overlapFrames)
+                    if (!touchedThisFrame.Contains(kv.Key))
+                        _toClear.Add(kv.Key);
+                foreach (var c in _toClear)
+                    overlapFrames.Remove(c);
             }
         }
 
         for (int i = 0; i < fireballBCs.Count; i++)
         {
-            var bc = fireballBCs[i];
-            if (!bc || !bc.enabled || !bc.gameObject.activeInHierarchy) continue;
+            var fbc = fireballBCs[i];
+            if (!fbc || !fbc.enabled || !fbc.gameObject.activeInHierarchy) continue;
 
-            var box = new AABB(); box.SetCollider(bc); box.UpdateBounds();
-            if (Overlap(playerAabb, box))
+            _tmpA.SetCollider(fbc); _tmpA.UpdateBounds();
+
+            for (int j = 0; j < ravenBCs.Count; j++)
             {
-                touchedThisFrame.Add(bc);
-                BumpAndCheck(bc, "Fireball");
-                if (dead) return;
-            }
-        }
+                var rbc = ravenBCs[j];
+                if (!rbc || !rbc.enabled || !rbc.gameObject.activeInHierarchy) continue;
 
-        if (overlapFrames.Count > 0)
-        {
-            _toClear ??= new List<Collider2D>();
-            _toClear.Clear();
-            foreach (var kv in overlapFrames)
-                if (!touchedThisFrame.Contains(kv.Key)) _toClear.Add(kv.Key);
-            foreach (var c in _toClear) overlapFrames.Remove(c);
+                _tmpB.SetCollider(rbc); _tmpB.UpdateBounds();
+
+                if (Overlap(_tmpA, _tmpB))
+                {
+                    var rd = rbc.GetComponentInParent<RavenDeath>();
+                    if (rd != null)
+                    {
+                        float dir = Mathf.Sign(fbc.transform.lossyScale.x);
+                        if (dir == 0) dir = 1f;
+                        rd.Die(dir);
+                    }
+                }
+            }
         }
     }
 
@@ -110,7 +149,7 @@ public class CollisionSystem : MonoBehaviour
         if (n >= confirmFrames)
         {
             Debug.Log($"Wizard hit by {cause}! (by {col.gameObject.name})");
-            KillWizard();
+            KillWizard(cause);
         }
     }
 
@@ -121,22 +160,28 @@ public class CollisionSystem : MonoBehaviour
 
         var ravens = GameObject.FindGameObjectsWithTag(ravenTag);
         if (ravens != null)
+        {
             foreach (var go in ravens)
             {
                 var bc = go ? go.GetComponent<BoxCollider2D>() : null;
                 if (bc) ravenBCs.Add(bc);
             }
+        }
 
         var fires = GameObject.FindGameObjectsWithTag(fireballTag);
         if (fires != null)
+        {
             foreach (var go in fires)
             {
                 var bc = go ? go.GetComponent<BoxCollider2D>() : null;
                 if (bc) fireballBCs.Add(bc);
             }
+        }
 
         nextRefreshAt = Time.time + refreshInterval;
-        if (firstTime) Debug.Log($"[CollisionSystem] Ready: Ravens={ravenBCs.Count}, Fireballs={fireballBCs.Count}");
+
+        if (firstTime)
+            Debug.Log($"[CollisionSystem] Ready: Ravens={ravenBCs.Count}, Fireballs={fireballBCs.Count}");
     }
 
     static bool Overlap(AABB a, AABB b)
@@ -145,27 +190,29 @@ public class CollisionSystem : MonoBehaviour
                a.Min.y < b.Max.y && a.Max.y > b.Min.y;
     }
 
-    void KillWizard()
+    void KillWizard(string cause)
     {
         if (dead) return;
         dead = true;
+
+        Debug.Log($"Wizard hit by {cause}!");
 
         if (wizAnimator)
         {
             wizAnimator.ResetTrigger("isRunning");
             wizAnimator.ResetTrigger("isIdling");
             wizAnimator.ResetTrigger("isJumping");
+            wizAnimator.ResetTrigger("isFalling");
             wizAnimator.ResetTrigger("isAttacking");
 
-            if (useTrigger && !string.IsNullOrEmpty(deathTrigger))
-                wizAnimator.SetTrigger(deathTrigger);
-            else if (!string.IsNullOrEmpty(deathStateName))
-                wizAnimator.CrossFade(deathStateName, 0.05f);
+            if (!string.IsNullOrEmpty(dyingBool))
+                wizAnimator.SetBool(dyingBool, true);
         }
 
         var rb = wizard.GetComponent<Rigidbody2D>();
         if (rb) rb.simulated = false;
 
-        overlapFrames.Clear();
+        var pc = wizard.GetComponent<PlayerController>();
+        if (pc) pc.enabled = false;
     }
 }
