@@ -612,11 +612,17 @@ MonoBehaviour:
     key: 27
   - type: 5
     key: 115
-  IndicatorPrefab: {fileID: 7076164996933462742, guid: d1786c265e6a57b409b174c192a184b6, type: 3}
+  indicatorPrefab: {fileID: 7076164996933462742, guid: d1786c265e6a57b409b174c192a184b6, type: 3}
   numTiles: 3
   padding: 0.8
   scrollerMove: {x: 0, y: 0, z: 0}
   playerMove: {x: 0, y: 0, z: 0}
+  enableSweepAndPrune: 1
+  player: {fileID: 770172679}
+  ravens:
+  - {fileID: 3069016331885382894, guid: 530d1ce3ee719074ca46ab900e4430f1, type: 3}
+  fireballs:
+  - {fileID: 8664245515700366364, guid: 503ec013dd0d7a243a929c517a63e9ca, type: 3}
 --- !u!114 &193830393
 MonoBehaviour:
   m_ObjectHideFlags: 0

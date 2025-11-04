@@ -130,7 +130,7 @@ public class EnemyController : MonoBehaviour
                    ref fireIndex, MaxFireballs, ref fireTime, FireballRate);
 
         // sample code to place AABBs and show Box Indicators on (new) moving objects
-        if (eventSystem.getInput(GameController.ControlType.Show))
+        if (eventSystem.GetInput(GameController.ControlType.Show))
         {
             showIndicators = !showIndicators;
         }
