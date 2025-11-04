@@ -59,10 +59,10 @@ public class PlayerController : MonoBehaviour
 
         if (!dead)
         {
-            cast = eventSystem.getInput(GameController.ControlType.Cast);
-            hack = eventSystem.getInput(GameController.ControlType.Hack);
-            jump = eventSystem.getInput(GameController.ControlType.Jump);
-            die  = eventSystem.getInput(GameController.ControlType.Die);
+            cast = eventSystem.GetInput(GameController.ControlType.Cast);
+            hack = eventSystem.GetInput(GameController.ControlType.Hack);
+            jump = eventSystem.GetInput(GameController.ControlType.Jump);
+            die  = eventSystem.GetInput(GameController.ControlType.Die);
         }
 
         // 死亡：立刻锁定到 Dying，其他全关

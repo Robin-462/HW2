@@ -52,14 +52,6 @@ public class GameController : MonoBehaviour
         }
     }
 
-    [System.Serializable]
-    public class IntervalPoint
-    {
-        public CollidableObject obj;
-        public float value;
-        public bool isBegin;
-    }
-
     [Tooltip("Array of input mappings to player action types")]
     public InputMapping[] inputMappingArray;
     public BoxIndicator indicatorPrefab;
@@ -81,9 +73,7 @@ public class GameController : MonoBehaviour
     public List<GameObject> fireballs = new List<GameObject>();
 
     private float layerWidth;
-    private readonly List<CollidableObject> collidableObjects = new List<CollidableObject>();
-    private readonly List<GameObject> objectsToAdd = new List<GameObject>();
-    private readonly List<GameObject> objectsToRemove = new List<GameObject>();
+    private readonly List<CollidableObject> allObjects = new List<CollidableObject>();
 
     // this class is used internally to query and update inputs and
     // enforces a one to one mapping between input keys and system
@@ -91,9 +81,10 @@ public class GameController : MonoBehaviour
     private class InputStatus
     {
         public KeyCode Key;
-        public bool Status;
+        public bool    Status;
     }
     
+    // inputs for the x, y axes of player motion
     private Vector2 inputAxes;
     // dictionary of all over valid input types
     private Dictionary<ControlType, InputStatus> inputStatusDictionary;
@@ -102,6 +93,7 @@ public class GameController : MonoBehaviour
     {
         var aabb = new AABB();
         aabb.SetCollider(box);
+
         return aabb;
     }
 
@@ -110,6 +102,7 @@ public class GameController : MonoBehaviour
     {
         var indicator = Instantiate(indicatorPrefab);
         indicator.SetAABB(aabb);
+
         return indicator;
     }
 
@@ -119,13 +112,14 @@ public class GameController : MonoBehaviour
     public float Clamp(float pos)
     {
         float clampedPos;
+
         // equal to half the full length of the tiles, (n * width) / 2
         float halfLength = numTiles * layerWidth / 2.0f;
         // the left and right bounds minus the half screen padding area
-        float leftBound = -(halfLength - layerWidth / 2.0f - padding);
-        float rightBound = halfLength - layerWidth / 2.0f - padding;
+        float  leftBound = -(halfLength - layerWidth / 2.0f - padding);
+        float rightBound =  (halfLength - layerWidth / 2.0f - padding);
 
-        if (pos < leftBound)
+        if      (pos < leftBound)
             clampedPos = leftBound;
         else if (pos > rightBound)
             clampedPos = rightBound;
@@ -135,269 +129,143 @@ public class GameController : MonoBehaviour
         return clampedPos;
     }
 
-    public float GetAxis(AxisType axis)
+    public float GetAxis (AxisType axis)
     {
-        return inputAxes[(int)axis];
+        return inputAxes[(int) axis];
     }
 
-    public bool getInput(ControlType type)
+    public bool GetInput (ControlType type)
     {
-        if (inputStatusDictionary.TryGetValue(type, out InputStatus status))
-            return status.Status;
+        bool input = false;
 
-        return false;
+        if (inputStatusDictionary.ContainsKey (type))
+            input = inputStatusDictionary[type].Status;
+
+        return input;
     }
 
-    private void UpdateInput()
+    public void UpdateInput ()
     {
         inputAxes[0] = Input.GetAxisRaw("Horizontal");
         inputAxes[1] = Input.GetAxisRaw("Vertical");
 
         foreach (ControlType type in System.Enum.GetValues(typeof(ControlType)))
         {
-            if (inputStatusDictionary.TryGetValue(type, out InputStatus status))
-                status.Status = Input.GetKeyDown(status.Key);
+            if (inputStatusDictionary.ContainsKey(type))
+                inputStatusDictionary[type].Status = Input.GetKeyDown(inputStatusDictionary[type].Key);
         }
     }
 
-    void InitializeSweepAndPrune()
-    {
-        collidableObjects.Clear();
-        
-        if (player != null)
-        {
-            AddCollidableObject(player);
-        }
-    }
-    
-    void AddCollidableObject(GameObject obj)
-    {
-        BoxCollider2D boxCollider = obj.GetComponent<BoxCollider2D>();
-        if (boxCollider != null)
-        {
-            AABB newAabb = CreateAABB(boxCollider);
-            CollidableObject collidable = new CollidableObject 
-            { 
-                gameObject = obj, 
-                AABB = newAabb 
-            };
-            collidableObjects.Add(collidable);
-        }
-    }
-    
-    void PerformSweepAndPrune()
-    {
-        if (!enableSweepAndPrune) return;
-        
-        ProcessObjectChanges();
-        
-        foreach (CollidableObject obj in collidableObjects)
-        {
-            if (obj.gameObject != null && obj.gameObject.activeInHierarchy)
-            {
-                obj.UpdateBounds();
-            }
-        }
-        
-        List<IntervalPoint> masterList = new List<IntervalPoint>();
-        
-        foreach (CollidableObject obj in collidableObjects)
-        {
-            if (obj.gameObject != null && obj.gameObject.activeInHierarchy)
-            {
-                masterList.Add(new IntervalPoint { 
-                    obj = obj, 
-                    value = obj.b1, 
-                    isBegin = true 
-                });
-                masterList.Add(new IntervalPoint { 
-                    obj = obj, 
-                    value = obj.e1, 
-                    isBegin = false 
-                });
-            }
-        }
-        
-        InsertionSort(masterList);
-        
-        List<CollidableObject> activeList = new List<CollidableObject>();
-        HashSet<string> checkedPairs = new HashSet<string>();
-        
-        foreach (IntervalPoint point in masterList)
-        {
-            if (point.isBegin)
-            {
-                foreach (CollidableObject activeObj in activeList)
-                {
-                    if (activeObj != point.obj)
-                    {
-                        string pairKey = GetPairKey(point.obj.gameObject, activeObj.gameObject);
-                        if (checkedPairs.Add(pairKey))
-                        {
-                            if (AABBIntersectionTest(point.obj, activeObj))
-                            {
-                                Debug.Log($"Sweep & Prune Collision: {point.obj.gameObject.name} vs {activeObj.gameObject.name}");
-                                VisualizeCollision(point.obj.gameObject, activeObj.gameObject);
-                            }
-                        }
-                    }
-                }
-                activeList.Add(point.obj);
-            }
-            else
-            {
-                activeList.Remove(point.obj);
-            }
-        }
-    }
-    
-    void InsertionSort(List<IntervalPoint> list)
-    {
-        for (int i = 1; i < list.Count; i++)
-        {
-            IntervalPoint current = list[i];
-            int j = i - 1;
-            
-            while (j >= 0 && list[j].value > current.value)
-            {
-                list[j + 1] = list[j];
-                j--;
-            }
-            list[j + 1] = current;
-        }
-    }
-    
-    bool AABBIntersectionTest(CollidableObject a, CollidableObject b)
-    {
-        bool noOverlap = 
-            (a.e1 < b.b1) ||
-            (b.e1 < a.b1) ||
-            (a.AABB.Max.y < b.AABB.Min.y) ||
-            (b.AABB.Max.y < a.AABB.Min.y);
-            
-        return !noOverlap;
-    }
-    
-    string GetPairKey(GameObject a, GameObject b)
-    {
-        int id1 = a.GetInstanceID();
-        int id2 = b.GetInstanceID();
-        return id1 < id2 ? $"{id1}-{id2}" : $"{id2}-{id1}";
-    }
-    
-    void VisualizeCollision(GameObject a, GameObject b)
-    {
-        StartCoroutine(FlashObjectCoroutine(a));
-        StartCoroutine(FlashObjectCoroutine(b));
-    }
-    
-    IEnumerator FlashObjectCoroutine(GameObject obj)
-    {
-        SpriteRenderer spriteRenderer = obj.GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
-        {
-            Color original = spriteRenderer.color;
-            spriteRenderer.color = Color.red;
-            yield return new WaitForSeconds(0.1f);
-            spriteRenderer.color = original;
-        }
-    }
-    
-    void ProcessObjectChanges()
-    {
-        foreach (GameObject obj in objectsToAdd)
-        {
-            AddCollidableObject(obj);
-        }
-        objectsToAdd.Clear();
-        
-        foreach (GameObject obj in objectsToRemove)
-        {
-            collidableObjects.RemoveAll(o => o.gameObject == obj);
-        }
-        objectsToRemove.Clear();
-    }
-
-    private void AddObjectToSweepAndPrune(GameObject obj)
-    {
-        if (obj != null)
-        {
-            objectsToAdd.Add(obj);
-        }
-    }
-    
-    public void RemoveObjectFromSweepAndPrune(GameObject obj)
-    {
-        if (obj != null)
-        {
-            objectsToRemove.Add(obj);
-        }
-    }
-
-    void AutoAddEnemies()
-    {
-        GameObject[] sceneRavens = GameObject.FindGameObjectsWithTag("Raven");
-        GameObject[] sceneFireballs = GameObject.FindGameObjectsWithTag("Fireball");
-        
-        foreach (GameObject raven in sceneRavens)
-        {
-            if (!IsObjectInSystem(raven))
-            {
-                AddObjectToSweepAndPrune(raven);
-            }
-        }
-        
-        foreach (GameObject fireball in sceneFireballs)
-        {
-            if (!IsObjectInSystem(fireball))
-            {
-                AddObjectToSweepAndPrune(fireball);
-            }
-        }
-    }
-
-    bool IsObjectInSystem(GameObject obj)
-    {
-        foreach (CollidableObject collidable in collidableObjects)
-        {
-            if (collidable.gameObject == obj)
-                return true;
-        }
-        return false;
-    }
-
-    // Start is called before the first frame update
     void Start()
     {
         GameObject foreground = GameObject.FindGameObjectWithTag("Foreground");
         layerWidth = foreground.GetComponent<SpriteRenderer>().bounds.size.x;
 
         scrollerMove = Vector3.zero;
-        playerMove = Vector3.zero;
+        playerMove   = Vector3.zero;
 
         // initialize motion axes and 1:1 mapping of keycode to status
         inputAxes = Vector2.zero;
-        inputStatusDictionary = new Dictionary<ControlType, InputStatus>();
+        inputStatusDictionary = new Dictionary<ControlType, InputStatus> ();
         foreach (InputMapping mapping in inputMappingArray)
         {
-            if (!inputStatusDictionary.ContainsKey(mapping.type))
-                inputStatusDictionary[mapping.type] = new InputStatus();
+            if (!inputStatusDictionary.ContainsKey (mapping.type))
+                inputStatusDictionary[mapping.type] = new InputStatus ();
 
             inputStatusDictionary[mapping.type].Key = mapping.key;
         }
-
-        InitializeSweepAndPrune();
+        if (player != null)
+        {
+            AddObject(player);
+        }
+        foreach (GameObject raven in ravens)
+        {
+            if (raven != null) AddObject(raven);
+        }
+        foreach (GameObject fireball in fireballs)
+        {
+            if (fireball != null) AddObject(fireball);
+        }
     }
-
-    // Update is called once per frame
+    
+    void AddObject(GameObject obj)
+    {
+        BoxCollider2D boxCollider = obj.GetComponent<BoxCollider2D>();
+        if (boxCollider != null)
+        {
+            AABB newAabb = CreateAABB(boxCollider);
+            CollidableObject newObj = new CollidableObject 
+            { 
+                gameObject = obj, 
+                AABB = newAabb 
+            };
+            allObjects.Add(newObj);
+        }
+    }
+    
     void Update()
     {
         UpdateInput();
 
-        if (getInput(ControlType.Quit))
+        if (GetInput(ControlType.Quit))
             Application.Quit();
 
-        AutoAddEnemies();
-        PerformSweepAndPrune();
+        // 初学者版本：简单的碰撞检测
+        CheckCollisions();
+    }
+    
+    void CheckCollisions()
+    {
+        if (!enableSweepAndPrune) return;
+        foreach (CollidableObject obj in allObjects)
+        {
+            if (obj.gameObject != null)
+            {
+                obj.UpdateBounds();
+            }
+        }
+        for (int i = 0; i < allObjects.Count; i++)
+        {
+            for (int j = i + 1; j < allObjects.Count; j++)
+            {
+                CollidableObject obj1 = allObjects[i];
+                CollidableObject obj2 = allObjects[j];
+                
+                if (obj1.gameObject != null && obj2.gameObject != null)
+                {
+                    bool noOverlap = 
+                        (obj1.e1 < obj2.b1) ||
+                        (obj2.e1 < obj1.b1) ||
+                        (obj1.AABB.Max.y < obj2.AABB.Min.y) ||
+                        (obj2.AABB.Max.y < obj1.AABB.Min.y);
+                        
+                    if (!noOverlap)
+                    {
+                        Debug.Log($"Sweep & Prune Collision: {obj1.gameObject.name} vs {obj2.gameObject.name}");
+                        if ((obj1.gameObject == player && IsEnemy(obj2.gameObject)) ||
+                            (obj2.gameObject == player && IsEnemy(obj1.gameObject)))
+                        {
+                            StartCoroutine(FlashPlayerRed());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    IEnumerator FlashPlayerRed()
+    {
+        SpriteRenderer spriteRenderer = player.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            Color originalColor = spriteRenderer.color;
+            spriteRenderer.color = Color.red;
+            yield return new WaitForSeconds(0.5f);
+            spriteRenderer.color = originalColor;
+        }
+    }
+    
+    bool IsEnemy(GameObject obj)
+    {
+        return obj.CompareTag("Raven") || obj.CompareTag("Fireball");
     }
 }
