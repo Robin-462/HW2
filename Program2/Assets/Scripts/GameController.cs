@@ -140,7 +140,7 @@ public class GameController : MonoBehaviour
         return inputAxes[(int)axis];
     }
 
-    public bool GetInput(ControlType type)
+    public bool getInput(ControlType type)
     {
         if (inputStatusDictionary.TryGetValue(type, out InputStatus status))
             return status.Status;
@@ -394,7 +394,7 @@ public class GameController : MonoBehaviour
     {
         UpdateInput();
 
-        if (GetInput(ControlType.Quit))
+        if (getInput(ControlType.Quit))
             Application.Quit();
 
         AutoAddEnemies();
