@@ -209,8 +209,6 @@ public class GameController : MonoBehaviour
 
         if (GetInput(ControlType.Quit))
             Application.Quit();
-
-        // 初学者版本：简单的碰撞检测
         CheckCollisions();
     }
     
